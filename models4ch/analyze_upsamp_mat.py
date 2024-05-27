@@ -31,7 +31,7 @@ import scipy.sparse.linalg as splinalg
 import scipy.spatial as spatial
 
 import torch
-from DBPN import Net as DBPNCX
+from cdbpn import Net as DBPNCX
 
 from matplotlib.ticker import FuncFormatter
 

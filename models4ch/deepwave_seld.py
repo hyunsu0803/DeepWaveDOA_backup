@@ -462,7 +462,7 @@ class BackProjLayer(torch.nn.Module):
         y = torch.linalg.norm(y, dim=2) ** 2 # norm operation along the second dimension and square the result
         y -= self.tau
         return y
-
+# unused....
 class DeepWave(torch.nn.Module):
     """DeepWave: real-time recurrent neural network for acoustic imaging.
     """

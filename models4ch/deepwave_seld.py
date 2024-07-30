@@ -107,20 +107,20 @@ def estimate_order(XYZ, rho, wl, eps):
     return K
 
 # TODO: parametrize this within parameters.py
-R = np.load("/scratch/data/metu_arni_cartesian_grid/em32_cartesian_grid.npy") 
-K = 18  # Order of polynomial filter.
-N_antenna = 32
+# R = np.load("/scratch/data/metu_arni_cartesian_grid/em32_cartesian_grid.npy") 
+# K = 18  # Order of polynomial filter.
+# N_antenna = 32
 N_px = 242
 
-pretr_params_freq0 = None
-pretr_params_freq1 = None
-pretr_params_freq2 = None
-pretr_params_freq3 = None
-pretr_params_freq4 = None
-pretr_params_freq5 = None
-pretr_params_freq6 = None
-pretr_params_freq7 = None
-pretr_params_freq8 = None
+# pretr_params_freq0 = None
+# pretr_params_freq1 = None
+# pretr_params_freq2 = None
+# pretr_params_freq3 = None
+# pretr_params_freq4 = None
+# pretr_params_freq5 = None
+# pretr_params_freq6 = None
+# pretr_params_freq7 = None
+# pretr_params_freq8 = None
 
 import scipy
 import scipy.sparse as sp

@@ -12,23 +12,23 @@ import random
 
 class DataGenerator(object):
     def __init__(
-            self, params, split=1, shuffle=True, per_file=False, is_eval=False
+            self, params, split=1, shuffle=True, per_file=False, is_eval=True
     ):
         self._per_file = per_file
         self._is_eval = is_eval
         self._splits = np.array(split)
         self._batch_size = params['batch_size']
-        self._feature_seq_len = params['feature_sequence_length']
-        self._label_seq_len = params['label_sequence_length']
-        self._shuffle = shuffle
+        self._feature_seq_len = params['feature_sequence_length']   # 250
+        self._label_seq_len = params['label_sequence_length']       # 50
+        self._shuffle = shuffle                                     # True
         self._feat_cls = cls_feature_class.FeatureClass(params=params, is_eval=self._is_eval)
-        self._label_dir = self._feat_cls.get_label_dir()
-        self._feat_dir = self._feat_cls.get_normalized_feat_dir()
+        self._label_dir = self._feat_cls.get_label_dir()            # /scratch/ssd1/feas-upsamp-starrss2023/foa_dev_label
+        self._feat_dir = self._feat_cls.get_unnormalized_feat_dir()   # /scratch/ssd1/feas-upsamp-starrss2023/foa_dev
         self._multi_accdoa = params['multi_accdoa']
 
         self._filenames_list = list()
         self._nb_frames_file = 0     # Using a fixed number of frames in feat files. Updated in _get_label_filenames_sizes()
-        self._nb_mel_bins = self._feat_cls.get_nb_mel_bins()
+        self._nb_mel_bins = self._feat_cls.get_nb_mel_bins()        # 64
         self._nb_ch = None
         self._label_len = None  # total length of label - DOA + SED
         self._doa_len = None    # DOA label length

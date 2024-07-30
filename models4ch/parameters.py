@@ -10,20 +10,20 @@ def get_params(argv='1'):
     params = dict(
         quick_test=True,     # To do quick test. Trains/test on small subset of dataset, and # of epochs
     
-        finetune_mode = False,  # Finetune on existing model, requires the pretrained model path set - pretrained_model_weights
-        pretrained_model_weights = 'models/3_1_dev_split0_multiaccdoa_foa_model.h5', 
+        finetune_mode = True,  # Finetune on existing model, requires the pretrained model path set - pretrained_model_weights
+        pretrained_model_weights = '/root/dai/DeepWaveDOA_backup/checkpoints/up32_bproj_conv_gru_mhsa.h5', 
 
         # INPUT PATH
-        dataset_dir='/scratch/ssd1/audio_datasets/STARSS23_audio_only',
+        dataset_dir='/root/dai/STARSS23',
         
         # EXTRACTED FEATURES PATH        
-        feat_label_dir = '/scratch/ssd1/feas-upsamp-starrss2023-2',
-        model_dir='models/',            # Dumps the trained models and training curves in this folder
-        dcase_output_dir='results/',    # recording-wise results are dumped in this path.
+        feat_label_dir = '/root/dai/feas-upsamp-starrss2023-2',
+        model_dir='/root/dai/DeepWaveDOA_backup/models4ch/models/',            # Dumps the trained models and training curves in this folder
+        dcase_output_dir='/root/dai/DeepWaveDOA_backup/models4ch/results/',    # recording-wise results are dumped in this path.
 
         # DATASET LOADING PARAMETERS
         mode='dev',         # 'dev' - development or 'eval' - evaluation dataset
-        dataset='mic',       # 'foa' - ambisonic or 'mic' - microphone signals
+        dataset='foa',       # 'foa' - ambisonic or 'mic' - microphone signals
 
         #FEATURE PARAMS
         fs=24000,
@@ -128,7 +128,7 @@ def get_params(argv='1'):
         params['unique_classes'] = 12
     elif '2022' in params['dataset_dir']:
          params['unique_classes'] = 13
-    elif 'STARSS23_audio_only' in params['dataset_dir'] or 'SPEECH' in params['dataset_dir']: # Using LOCATA or other dataset with only one class
+    elif 'STARSS23' in params['dataset_dir'] or 'SPEECH' in params['dataset_dir']: # Using LOCATA or other dataset with only one class
         params['unique_classes'] = 1
     else:
         return None

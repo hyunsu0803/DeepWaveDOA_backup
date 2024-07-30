@@ -223,6 +223,7 @@ def main(argv):
 
     # Training setup
     train_splits, val_splits, test_splits = None, None, None
+    
     if params['mode'] == 'dev':
         if '2020' in params['dataset_dir']:
             test_splits = [1]
@@ -259,13 +260,13 @@ def main(argv):
         print('---------------------------------------------------------------------------------------------------')
 
         # Unique name for the run
-        loc_feat = params['dataset']
+        loc_feat = params['dataset']        # foa
         if params['dataset'] == 'mic':
             if params['use_salsalite']:
                 loc_feat = '{}_salsa'.format(params['dataset'])
             else:
                 loc_feat = '{}_gcc'.format(params['dataset'])
-        loc_output = 'multiaccdoa' if params['multi_accdoa'] else 'accdoa'
+        loc_output = 'multiaccdoa' if params['multi_accdoa'] else 'accdoa'      
 
         cls_feature_class.create_folder(params['model_dir'])
         unique_name = '{}_{}_{}_split{}_{}_{}'.format(
@@ -319,46 +320,46 @@ def main(argv):
         else:
             criterion = nn.MSELoss()
 
-        for epoch_cnt in range(nb_epoch):
-            # ---------------------------------------------------------------------
-            # TRAINING
-            # ---------------------------------------------------------------------
-            start_time = time.time()
-            train_loss = train_epoch(data_gen_train, optimizer, model, criterion, params, device)
-            train_time = time.time() - start_time
+        # for epoch_cnt in range(nb_epoch):
+        #     # ---------------------------------------------------------------------
+        #     # TRAINING
+        #     # ---------------------------------------------------------------------
+        #     start_time = time.time()
+        #     train_loss = train_epoch(data_gen_train, optimizer, model, criterion, params, device)
+        #     train_time = time.time() - start_time
 
-            # ---------------------------------------------------------------------
-            # VALIDATION
-            # ---------------------------------------------------------------------
-            start_time = time.time()
-            val_loss = test_epoch(data_gen_val, model, criterion, dcase_output_val_folder, params, device)
+        #     # ---------------------------------------------------------------------
+        #     # VALIDATION
+        #     # ---------------------------------------------------------------------
+        #     start_time = time.time()
+        #     val_loss = test_epoch(data_gen_val, model, criterion, dcase_output_val_folder, params, device)
 
-            # Calculate the DCASE 2021 metrics - Location-aware detection and Class-aware localization scores
-            val_ER, val_F, val_LE, val_LR, val_seld_scr, classwise_val_scr = score_obj.get_SELD_Results(dcase_output_val_folder)
+        #     # Calculate the DCASE 2021 metrics - Location-aware detection and Class-aware localization scores
+        #     val_ER, val_F, val_LE, val_LR, val_seld_scr, classwise_val_scr = score_obj.get_SELD_Results(dcase_output_val_folder)
 
-            val_time = time.time() - start_time
+        #     val_time = time.time() - start_time
             
-            # Save model if loss is good
-            if val_seld_scr <= best_seld_scr:
-                best_val_epoch, best_ER, best_F, best_LE, best_LR, best_seld_scr = epoch_cnt, val_ER, val_F, val_LE, val_LR, val_seld_scr
-                torch.save(model.state_dict(), model_name)
+        #     # Save model if loss is good
+        #     if val_seld_scr <= best_seld_scr:
+        #         best_val_epoch, best_ER, best_F, best_LE, best_LR, best_seld_scr = epoch_cnt, val_ER, val_F, val_LE, val_LR, val_seld_scr
+        #         torch.save(model.state_dict(), model_name)
 
-            # Print stats
-            print(
-                'epoch: {}, time: {:0.2f}/{:0.2f}, '
-                # 'train_loss: {:0.2f}, val_loss: {:0.2f}, '
-                'train_loss: {:0.4f}, val_loss: {:0.4f}, '
-                'ER/F/LE/LR/SELD: {}, '
-                'best_val_epoch: {} {}'.format(
-                    epoch_cnt, train_time, val_time,
-                    train_loss, val_loss,
-                    '{:0.2f}/{:0.2f}/{:0.2f}/{:0.2f}/{:0.2f}'.format(val_ER, val_F, val_LE, val_LR, val_seld_scr),
-                    best_val_epoch, '({:0.2f}/{:0.2f}/{:0.2f}/{:0.2f}/{:0.2f})'.format(best_ER, best_F, best_LE, best_LR, best_seld_scr))
-            )
+        #     # Print stats
+        #     print(
+        #         'epoch: {}, time: {:0.2f}/{:0.2f}, '
+        #         # 'train_loss: {:0.2f}, val_loss: {:0.2f}, '
+        #         'train_loss: {:0.4f}, val_loss: {:0.4f}, '
+        #         'ER/F/LE/LR/SELD: {}, '
+        #         'best_val_epoch: {} {}'.format(
+        #             epoch_cnt, train_time, val_time,
+        #             train_loss, val_loss,
+        #             '{:0.2f}/{:0.2f}/{:0.2f}/{:0.2f}/{:0.2f}'.format(val_ER, val_F, val_LE, val_LR, val_seld_scr),
+        #             best_val_epoch, '({:0.2f}/{:0.2f}/{:0.2f}/{:0.2f}/{:0.2f})'.format(best_ER, best_F, best_LE, best_LR, best_seld_scr))
+        #     )
 
-            patience_cnt += 1
-            if patience_cnt > params['patience']:
-                break
+        #     patience_cnt += 1
+        #     if patience_cnt > params['patience']:
+        #         break
 
         # ---------------------------------------------------------------------
         # Evaluate on unseen test data

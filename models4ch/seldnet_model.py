@@ -100,6 +100,7 @@ class MSELoss_ADPIT(object):
 
         return loss
 
+# may be useless......??????
 class MultiHeadAttentionLayer(nn.Module):
     def __init__(self, hid_dim, n_heads, dropout):
         super().__init__()
@@ -172,7 +173,7 @@ class MultiHeadAttentionLayer(nn.Module):
 
         return x
 
-
+# may be useless
 class AttentionLayer(nn.Module):
     def __init__(self, in_channels, out_channels, key_channels):
         super(AttentionLayer, self).__init__()

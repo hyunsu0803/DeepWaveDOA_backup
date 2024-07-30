@@ -37,7 +37,7 @@ class FeatureClass:
         :param is_eval: if True, does not load dataset labels.
         """
         # Input directories
-        self._feat_label_dir = params['feat_label_dir']
+        self._feat_label_dir = params['feat_label_dir']     
         self._dataset_dir = params['dataset_dir']
         self._dataset_combination = '{}_{}'.format(params['dataset'], 'eval' if is_eval else 'dev')
         self._aud_dir = os.path.join(self._dataset_dir, self._dataset_combination)
@@ -493,7 +493,7 @@ class FeatureClass:
                 if not self._use_salsalite:
                     mel_spect = self._get_mel_spectrogram(spect)
 
-                feat = None
+                feat = None                 # mel spectrogram + foa intensity vectors = feature !!!
                 if self._dataset == 'foa':
                     # extract intensity vectors
                     foa_iv = self._get_foa_intensity_vectors(spect)
@@ -619,8 +619,8 @@ class FeatureClass:
         print('\t\taud_dir {}\n\t\tdesc_dir {}\n\t\tlabel_dir {}'.format(
             self._aud_dir, self._desc_dir, self._label_dir))
         create_folder(self._label_dir)
-        for sub_folder in os.listdir(self._desc_dir):
-            loc_desc_folder = os.path.join(self._desc_dir, sub_folder)
+        for sub_folder in os.listdir(self._desc_dir):       # metadata_dev
+            loc_desc_folder = os.path.join(self._desc_dir, sub_folder)  # metadata_dev/dev-test-sony
             for file_cnt, file_name in enumerate(os.listdir(loc_desc_folder)):
                 wav_filename = '{}.wav'.format(file_name.split('.')[0])
                 if wav_filename == ".wav" or "._" in wav_filename:

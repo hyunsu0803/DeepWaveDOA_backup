@@ -24,6 +24,7 @@ def main(argv):
 
     # use parameter set defined by user
     task_id = '1' if len(argv) < 2 else argv[1]
+    task_id = '3'
     params = parameters.get_params(task_id)
 
     print('\nLoading the best model and predicting results on the testing split')
@@ -35,7 +36,7 @@ def main(argv):
     dump_figures = True
 
     # CHOOSE THE MODEL WHOSE OUTPUT YOU WANT TO VISUALIZE 
-    checkpoint_name = "models/1_1_foa_dev_split6_model.h5"
+    checkpoint_name = "/root/dai/DeepWaveDOA_backup/checkpoints/up32_bproj_conv_gru_mhsa.h5"
     model = seldnet_model.CRNN(data_in, data_out, params)
     model.eval()
     model.load_state_dict(torch.load(checkpoint_name, map_location=torch.device('cpu')))
@@ -61,9 +62,9 @@ def main(argv):
             output = output.cpu().detach().numpy()
             target = target.cpu().detach().numpy()
 
-            use_activity_detector = False
-            if use_activity_detector:
-                activity = (torch.sigmoid(activity_out).cpu().detach().numpy() >0.5)
+            # use_activity_detector = False
+            # if use_activity_detector:
+            #     activity = (torch.sigmoid(activity_out).cpu().detach().numpy() >0.5)
             mel_spec = data[0][0].cpu()
             foa_iv = data[0][-1].cpu()
             target[target > 1] =0
@@ -83,9 +84,9 @@ def main(argv):
             plot.subplot(324), plot.plot(target[:params['label_sequence_length'], 1, 2], 'b', lw=2)
             plot.grid()
             plot.ylim([-1.1, 1.1])
-            if use_activity_detector:
-                output[:, 0, 0:3] = activity[:, 0][:, np.newaxis]*output[:, 0, 0:3]
-                output[:, 1, 0:3] = activity[:, 1][:, np.newaxis]*output[:, 1, 0:3]
+            # if use_activity_detector:
+            #     output[:, 0, 0:3] = activity[:, 0][:, np.newaxis]*output[:, 0, 0:3]
+            #     output[:, 1, 0:3] = activity[:, 1][:, np.newaxis]*output[:, 1, 0:3]
 
             plot.subplot(325), plot.plot(output[:params['label_sequence_length'], 0, 0], 'r', lw=2)
             plot.subplot(325), plot.plot(output[:params['label_sequence_length'], 0, 1], 'g', lw=2)

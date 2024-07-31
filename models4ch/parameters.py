@@ -14,15 +14,15 @@ def get_params(argv='1'):
         pretrained_model_weights = '/root/dai/DeepWaveDOA_backup/checkpoints/up32_bproj_conv_gru_mhsa.h5', 
 
         # INPUT PATH
-        dataset_dir='/root/dai/STARSS23',
+        dataset_dir='/root/dai/STARSS23/',
         
         # EXTRACTED FEATURES PATH        
-        feat_label_dir = '/root/dai/feas-upsamp-starrss2023-2',
+        feat_label_dir = '/root/dai/feas-upsamp-starrss2023-2/',
         model_dir='/root/dai/DeepWaveDOA_backup/models4ch/models/',            # Dumps the trained models and training curves in this folder
         dcase_output_dir='/root/dai/DeepWaveDOA_backup/models4ch/results/',    # recording-wise results are dumped in this path.
 
         # DATASET LOADING PARAMETERS
-        mode='dev',         # 'dev' - development or 'eval' - evaluation dataset
+        mode='eval',         # 'dev' - development or 'eval' - evaluation dataset
         dataset='foa',       # 'foa' - ambisonic or 'mic' - microphone signals
 
         #FEATURE PARAMS

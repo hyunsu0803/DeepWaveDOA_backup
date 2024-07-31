@@ -227,7 +227,7 @@ class CRNN(torch.nn.Module):
         self.cdbpn = CDBPN(num_channels=16, base_filter=32,  feat = 128, num_stages=10, scale_factor=8).to('cuda:0') 
         #pretrained_dict = torch.load('/home/asroman/repos/DBPN-Pytorch/weights/cdbpn_metu_arni_dense16ch_log/cdbpn_epoch_99.pth', map_location=torch.device('cuda:1'))
         
-        pretrained_dict = torch.load('/scratch/data/CDBPN_weights/cdbpn_metu_arni_dense16ch_log/cdbpn_epoch_99.pth', map_location=torch.device('cuda:0'))
+        pretrained_dict = torch.load('/root/dai/DeepWaveDOA_backup/models4ch/models/cdbpn_epoch_99.pth', map_location=torch.device('cuda:0'))
         new_pretrained_dict = {k.replace('module.', ''): v for k, v in pretrained_dict.items()}
         self.cdbpn.load_state_dict(new_pretrained_dict)
         for param in self.cdbpn.parameters():
@@ -235,7 +235,7 @@ class CRNN(torch.nn.Module):
         self.dw_b1 = BackProjLayer(Nch=32, Npx=N_px)
         # for param in self.dw_b1.parameters():
         #     param.requires_grad = False
-        self.dw_b1 = self.dw_b1.to('cuda:1') 
+        self.dw_b1 = self.dw_b1.to('cuda:0') 
 
         self.conv_block_list = torch.nn.ModuleList()
         for conv_cnt in range(len(params['f_pool_size'])):
@@ -263,6 +263,8 @@ class CRNN(torch.nn.Module):
             for fc_cnt in range(params['nb_fnn_layers']):
                 self.fnn_list.append(nn.Linear(self.params['fnn_size'] if fc_cnt else self.params['rnn_size'], self.params['fnn_size'], bias=True))
         self.fnn_list.append(nn.Linear(self.params['fnn_size'] if self.params['nb_fnn_layers'] else self.params['rnn_size'], out_shape[-1], bias=True))
+            # if is_eval : out_shape = None
+        
 #        self.attn = None
 #        if params['self_attn']:
 ##            self.attn = AttentionLayer(params['rnn_size'], params['rnn_size'], params['rnn_size'])

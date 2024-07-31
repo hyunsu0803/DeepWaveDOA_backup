@@ -77,8 +77,9 @@ class DataGenerator(object):
     def _get_filenames_list_and_feat_label_sizes(self):
         print('Computing some stats about the dataset')
         max_frames, total_frames, temp_feat = -1, 0, []
+        print("@@@@@@@@ ", self._feat_dir)              # /root/dai/feas-upsamp-starrss2023-2/foa_eval
         for filename in os.listdir(self._feat_dir):
-            if int(filename[4]) in self._splits: # check which split the file belongs to
+            if int(filename[3]) in self._splits: # check which split the file belongs to
                 self._filenames_list.append(filename)
                     
                 temp_feat = np.load(os.path.join(self._feat_dir, filename))
@@ -86,8 +87,8 @@ class DataGenerator(object):
                 if temp_feat.shape[0]>max_frames:
                     max_frames = temp_feat.shape[0]
         if len(temp_feat)!=0:
-            self._nb_frames_file = max_frames if self._per_file else temp_feat.shape[0]
-            self._nb_ch = temp_feat.shape[1] // self._nb_mel_bins
+            self._nb_frames_file = max_frames if self._per_file else temp_feat.shape[0]     # 22145
+            self._nb_ch = temp_feat.shape[1] // self._nb_mel_bins                           # 7
         else:
             print('Loading features failed')
             exit()
@@ -103,15 +104,15 @@ class DataGenerator(object):
             self._doa_len = 3 # Cartesian
 
         if self._per_file:
-            self._batch_size = int(np.ceil(max_frames/float(self._feature_seq_len)))
+            self._batch_size = int(np.ceil(max_frames/float(self._feature_seq_len)))        # 89
             print('\tWARNING: Resetting batch size to {}. To accommodate the inference of longest file of {} frames in a single batch'.format(self._batch_size, max_frames))
-            self._nb_total_batches = len(self._filenames_list)
+            self._nb_total_batches = len(self._filenames_list)                              # 79
         else:
             self._nb_total_batches = int(np.floor(total_frames / (self._batch_size*self._feature_seq_len)))
 
         self._feature_seq_len = 50
-        self._feature_batch_seq_len = self._batch_size*self._feature_seq_len
-        self._label_batch_seq_len = self._batch_size*self._label_seq_len
+        self._feature_batch_seq_len = self._batch_size*self._feature_seq_len            # 4450
+        self._label_batch_seq_len = self._batch_size*self._label_seq_len                # 4450
         return
 
     def generate(self):
@@ -130,14 +131,14 @@ class DataGenerator(object):
 
         file_cnt = 0
         if self._is_eval:
-            for i in range(self._nb_total_batches):
+            for i in range(self._nb_total_batches):     # 79
                 # load feat and label to circular buffer. Always maintain atleast one batch worth feat and label in the
                 # circular buffer. If not keep refilling it.
                 while len(self._circ_buf_feat) < self._feature_batch_seq_len:
                     temp_feat = np.load(os.path.join(self._feat_dir, self._filenames_list[file_cnt]))
                     # filename_feat = self._filenames_list[file_cnt].replace("foa", "16bit")
                     # TODO: add path to deepwave features within the data generator class, i.e. self._dwfeats_dir
-                    deepwave_feats = np.load(f"/scratch/ssd1/feas-upsamp-starrss2023/mic_dev_dw/{self._filenames_list[file_cnt]}").transpose(1, 0, 2, 3)
+                    deepwave_feats = np.load(f"/root/dai/feas-upsamp-starrss2023-2/foa_eval_dw/{self._filenames_list[file_cnt]}").transpose(1, 0, 2, 3)
 
                     # deepwave_feats = np.load(f"/scratch/data/LOCATA_features_deepwave_speech_only/mic_dev_deepwave/{filename_feat}")
                     # print("feat shape val", deepwave_feats.shape)
@@ -151,24 +152,28 @@ class DataGenerator(object):
 
                     # If self._per_file is True, this returns the sequences belonging to a single audio recording
                     if self._per_file:
+                        # print(self._feature_batch_seq_len)    # 4450
+                        # print(temp_feat.shape[0])             # 15782
+                        # print(temp_feat.shape)                # (15782, 448)
                         extra_frames = self._feature_batch_seq_len - temp_feat.shape[0]
-                        extra_feat = np.ones((extra_frames, temp_feat.shape[1])) * 1e-6
+                        if extra_frames > 0:
+                            extra_feat = np.ones((extra_frames, temp_feat.shape[1])) * 1e-6
 
-                        for row_cnt, row in enumerate(extra_feat):
-                            self._circ_buf_feat.append(row)
+                            for row_cnt, row in enumerate(extra_feat):
+                                self._circ_buf_feat.append(row)
 
                     file_cnt = file_cnt + 1
 
                 # Read one batch size from the circular buffer
                 # feat = np.zeros((self._feature_batch_seq_len, self._nb_mel_bins * self._nb_ch))
-                feat = np.zeros((self._feature_batch_seq_len, 16, 4, 4), dtype=np.complex128)
+                feat = np.zeros((self._feature_batch_seq_len, 100, 4, 4), dtype=np.complex128)       # (4450, 16, 4, 4) -> (4450, 100, 4, 4)
                 for j in range(self._feature_batch_seq_len):
                     feat[j, :, :, :] = self._circ_buf_feat.popleft()
                 # feat = np.reshape(feat, (self._feature_batch_seq_len, self._nb_ch, self._nb_mel_bins))
 
                 # Split to sequences
-                feat = self._split_in_seqs(feat, self._feature_seq_len)
-                feat = np.transpose(feat, (2, 0, 1, 3, 4)) # (128, 9, 50, 4, 4), original feat shape: (128, 7, 250, 382)
+                feat = self._split_in_seqs(feat, self._feature_seq_len)     # (4450, 100, 4, 4) -> (89, 50, 100, 4, 4)
+                feat = np.transpose(feat, (2, 0, 1, 3, 4)) # (128, 9, 50, 4, 4), original feat shape: (128, 7, 250, 382) # my: (100, 89, 50, 4, 4)
                 feat = np.reshape(feat, (16, -1, 4, 4)) # (freq_bands, Nsamps[batches x T], VisX, VisY)
 
                 # # Read one batch size from the circular buffer
@@ -282,7 +287,7 @@ class DataGenerator(object):
         elif len(data.shape) == 4:  # for multi-ACCDOA with ADPIT
             if data.shape[0] % _seq_len:
                 data = data[:-(data.shape[0] % _seq_len), :, :, :]
-            data = data.reshape((data.shape[0] // _seq_len, _seq_len, data.shape[1], data.shape[2], data.shape[3]))
+            data = data.reshape((data.shape[0] // _seq_len, _seq_len, data.shape[1], data.shape[2], data.shape[3]))     # (4450, 100, 4, 4) -> (89, 50, 100, 4, 4)
         else:
             print('ERROR: Unknown data dimensions: {}'.format(data.shape))
             exit()

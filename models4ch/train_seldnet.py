@@ -198,7 +198,9 @@ def main(argv):
                               (default) 1
 
     """
+    argv.append('3')
     print(argv)
+    
     if len(argv) != 3:
         print('\n\n')
         print('-------------------------------------------------------------------------------------------------------')
@@ -254,6 +256,8 @@ def main(argv):
         else:
             print('ERROR: Unknown dataset splits')
             exit()
+            
+    test_splits = [[0]]
     for split_cnt, split in enumerate(test_splits):
         print('\n\n---------------------------------------------------------------------------------------------------')
         print('------------------------------------      SPLIT {}   -----------------------------------------------'.format(split))
@@ -261,44 +265,44 @@ def main(argv):
 
         # Unique name for the run
         loc_feat = params['dataset']        # foa
-        if params['dataset'] == 'mic':
-            if params['use_salsalite']:
-                loc_feat = '{}_salsa'.format(params['dataset'])
-            else:
-                loc_feat = '{}_gcc'.format(params['dataset'])
+        # if params['dataset'] == 'mic':
+        #     if params['use_salsalite']:
+        #         loc_feat = '{}_salsa'.format(params['dataset'])
+        #     else:
+        #         loc_feat = '{}_gcc'.format(params['dataset'])
         loc_output = 'multiaccdoa' if params['multi_accdoa'] else 'accdoa'      
 
-        cls_feature_class.create_folder(params['model_dir'])
+        # cls_feature_class.create_folder(params['model_dir'])
         unique_name = '{}_{}_{}_split{}_{}_{}'.format(
             task_id, job_id, params['mode'], split_cnt, loc_output, loc_feat
         )
-        model_name = '{}_model.h5'.format(os.path.join(params['model_dir'], unique_name))
-        print("unique_name: {}\n".format(unique_name))
+        # model_name = '{}_model.h5'.format(os.path.join(params['model_dir'], unique_name))
+        # print("unique_name: {}\n".format(unique_name))
 
         # Load train and validation data
-        print('Loading training dataset:')
-        data_gen_train = cls_data_generator.DataGenerator(
-            params=params, split=train_splits[split_cnt], per_file=False
-        )
+        # print('Loading training dataset:')
+        # data_gen_train = cls_data_generator.DataGenerator(
+        #     params=params, split=train_splits[split_cnt], per_file=False
+        # )
 
-        print('Loading validation dataset:')
-        data_gen_val = cls_data_generator.DataGenerator(
-            params=params, split=val_splits[split_cnt], shuffle=False, per_file=True
-        )
+        # print('Loading validation dataset:')
+        # data_gen_val = cls_data_generator.DataGenerator(
+        #     params=params, split=val_splits[split_cnt], shuffle=False, per_file=True
+        # )
 
         # Collect i/o data size and load model configuration
-        data_in, data_out = data_gen_train.get_data_sizes()
-        model = seldnet_model.CRNN(data_in, data_out, params).to(device)
-        if params['finetune_mode']:
-            print('Running in finetuning mode. Initializing the model to the weights - {}'.format(params['pretrained_model_weights']))
-            model.load_state_dict(torch.load(params['pretrained_model_weights'], map_location='cpu'))
+        # data_in, data_out = data_gen_train.get_data_sizes()
+        # model = seldnet_model.CRNN(data_in, data_out, params).to(device)
+        # if params['finetune_mode']:
+        #     print('Running in finetuning mode. Initializing the model to the weights - {}'.format(params['pretrained_model_weights']))
+        #     model.load_state_dict(torch.load(params['pretrained_model_weights'], map_location='cpu'))
 
-        print('---------------- SELD-net -------------------')
-        print('FEATURES:\n\tdata_in: {}\n\tdata_out: {}\n'.format(data_in, data_out))
-        print('MODEL:\n\tdropout_rate: {}\n\tCNN: nb_cnn_filt: {}, f_pool_size{}, t_pool_size{}\n\trnn_size: {}, fnn_size: {}\n'.format(
-            params['dropout_rate'], params['nb_cnn2d_filt'], params['f_pool_size'], params['t_pool_size'], params['rnn_size'],
-            params['fnn_size']))
-        print(model)
+        # print('---------------- SELD-net -------------------')
+        # print('FEATURES:\n\tdata_in: {}\n\tdata_out: {}\n'.format(data_in, data_out))
+        # print('MODEL:\n\tdropout_rate: {}\n\tCNN: nb_cnn_filt: {}, f_pool_size{}, t_pool_size{}\n\trnn_size: {}, fnn_size: {}\n'.format(
+        #     params['dropout_rate'], params['nb_cnn2d_filt'], params['f_pool_size'], params['t_pool_size'], params['rnn_size'],
+        #     params['fnn_size']))
+        # print(model)
 
         # Dump results in DCASE output format for calculating final scores
         dcase_output_val_folder = os.path.join(params['dcase_output_dir'], '{}_{}_val'.format(unique_name, strftime("%Y%m%d%H%M%S", gmtime())))
@@ -309,12 +313,12 @@ def main(argv):
         score_obj = ComputeSELDResults(params)
 
         # start training
-        best_val_epoch = -1
-        best_ER, best_F, best_LE, best_LR, best_seld_scr = 1., 0., 180., 0., 9999 
-        patience_cnt = 0
+        # best_val_epoch = -1
+        # best_ER, best_F, best_LE, best_LR, best_seld_scr = 1., 0., 180., 0., 9999 
+        # patience_cnt = 0
 
-        nb_epoch = 2 if params['quick_test'] else params['nb_epochs']
-        optimizer = optim.Adam(model.parameters(), lr=params['lr'])
+        # nb_epoch = 2 if params['quick_test'] else params['nb_epochs']
+        # optimizer = optim.Adam(model.parameters(), lr=params['lr'])
         if params['multi_accdoa'] is True:
             criterion = seldnet_model.MSELoss_ADPIT()
         else:
@@ -364,13 +368,21 @@ def main(argv):
         # ---------------------------------------------------------------------
         # Evaluate on unseen test data
         # ---------------------------------------------------------------------
-        print('Load best model weights')
-        model.load_state_dict(torch.load(model_name, map_location='cpu'))
-
+        
+        
         print('Loading unseen test dataset:')
         data_gen_test = cls_data_generator.DataGenerator(
-            params=params, split=test_splits[split_cnt], shuffle=False, per_file=True
+            params=params, split=test_splits[split_cnt], shuffle=False, per_file=True, is_eval=True
         )
+        
+        data_in, data_out = data_gen_test.get_data_sizes()
+        data_out = (data_in[0], 50, 1*3*3)
+        model = seldnet_model.CRNN(data_in, data_out, params).to(device)
+        
+        print('Load best model weights')
+        model_name = '/root/dai/DeepWaveDOA_backup/models4ch/models/up32_bproj_conv_gru_mhsa.h5'
+        model.load_state_dict(torch.load(model_name, map_location='cpu'))
+        
 
         # Dump results in DCASE output format for calculating final scores
         dcase_output_test_folder = os.path.join(params['dcase_output_dir'], '{}_{}_test'.format(unique_name, strftime("%Y%m%d%H%M%S", gmtime())))
@@ -400,8 +412,9 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    try:
-        sys.exit(main(sys.argv))
-    except (ValueError, IOError) as e:
-        sys.exit(e)
+    sys.exit(main(sys.argv))
+    # try:
+    #     sys.exit(main(sys.argv))
+    # except (ValueError, IOError) as e:
+    #     sys.exit(e)
 
